@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>For Baby — Nov 23</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-paper: #F7F2EA;
+      --card-surface: #FFFDF9;
+      --ink-primary: #2A2421;
+      --ink-muted: #6E655F;
+      --accent-crimson: #9B3632;
+      --accent-crimson-dark: #7E2926;
+      --border-hairline: #E6DDD0;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      background-color: var(--bg-paper);
+      color: var(--ink-primary);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Subtle tactile paper grain overlay */
+    .paper-grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0.35;
+      background-image: radial-gradient(rgba(42, 36, 33, 0.09) 1px, transparent 0);
+      background-size: 20px 20px;
+    }
+
+    .font-serif-editorial {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+    }
+
+    .font-handwriting {
+      font-family: 'Caveat', cursive;
+    }
+
+    /* Physical stationery card shadow & border */
+    .stationery-card {
+      background-color: var(--card-surface);
+      border: 1px solid var(--border-hairline);
+      box-shadow:
+        0 1px 2px rgba(42, 36, 33, 0.04),
+        0 14px 34px -10px rgba(42, 36, 33, 0.09);
+    }
+
+    /* Wax seal button */
+    .wax-seal {
+      background: radial-gradient(circle at 32% 28%, #B2433E, #96322E 68%, #772420 100%);
+      box-shadow:
+        0 6px 16px rgba(150, 50, 46, 0.28),
+        inset 0 1px 2px rgba(255, 255, 255, 0.28),
+        inset 0 -2px 4px rgba(55, 14, 12, 0.35);
+      border: 1.5px solid rgba(255, 245, 238, 0.28);
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .wax-seal:active {
+      transform: scale(0.95);
+    }
+
+    /* Smooth card transitions */
+    .view-panel {
+      transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .view-hidden {
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      position: absolute;
+      visibility: hidden;
+    }
+
+    .view-active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+      position: relative;
+      visibility: visible;
+    }
+
+    /* Dodging No button */
+    #noBtn {
+      transition: transform 0.24s cubic-bezier(0.34, 1.45, 0.64, 1), color 0.2s ease, border-color 0.2s ease;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    #yesBtn {
+      background-color: var(--accent-crimson);
+      transition: background-color 0.2s ease, transform 0.18s ease;
+      touch-action: manipulation;
+    }
+
+    #yesBtn:hover {
+      background-color: var(--accent-crimson-dark);
+    }
+
+    #yesBtn:active {
+      transform: scale(0.97);
+    }
+
+    /* Sound indicator dot */
+    @keyframes softPulse {
+      0%, 100% { opacity: 0.45; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.15); }
+    }
+
+    .sound-active .sound-dot {
+      background-color: var(--accent-crimson);
+      animation: softPulse 1.8s infinite ease-in-out;
+    }
+
+    .sound-muted .sound-dot {
+      background-color: #B8AFA6;
+    }
+
+    /* Subtle floating heart/petal particles on acceptance */
+    @keyframes floatPetal {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
+      }
+      15% {
+        opacity: 0.75;
+      }
+      100% {
+        transform: translateY(-75vh) rotate(22deg);
+        opacity: 0;
+      }
+    }
+
+    .petal-particle {
+      position: fixed;
+      bottom: -24px;
+      pointer-events: none;
+      z-index: 40;
+      color: var(--accent-crimson);
+      animation: floatPetal linear forwards;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-[100dvh] px-5 py-8 sm:px-6 relative">
+
+  <div class="paper-grain"></div>
+
+  <!-- Minimal top-right sound toggle -->
+  <button
+    id="soundToggle"
+    type="button"
+    aria-label="Toggle background music"
+    class="sound-muted fixed top-4 right-4 sm:top-6 sm:right-6 z-30 px-3.5 py-1.5 rounded-full bg-[#FFFDF9]/90 backdrop-blur-sm border border-[#E6DDD0] text-xs font-medium text-[#6E655F] hover:text-[#2A2421] flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
+    style="margin-top: env(safe-area-inset-top, 0px);"
+  >
+    <span class="sound-dot w-2 h-2 rounded-full inline-block"></span>
+    <span id="soundLabel">Sound off</span>
+  </button>
+
+  <!-- Main container -->
+  <main class="w-full max-w-[420px] md:max-w-[460px] my-auto relative z-10">
+
+    <!-- STEP 1: ENVELOPE COVER -->
+    <section id="coverView" class="view-panel view-active">
+      <div class="stationery-card rounded-2xl p-8 sm:p-11 text-center relative">
+        <!-- Double hairline inner frame -->
+        <div class="border border-[#EFE7DC] rounded-xl px-5 py-10 sm:py-12">
+          <p class="text-[11px] uppercase tracking-[0.22em] text-[#8C7F75] font-medium mb-4">
+            November 23
+          </p>
+
+          <h1 class="font-serif-editorial text-4xl sm:text-[44px] font-medium text-[#2A2421] leading-tight mb-3">
+            For <span class="italic">Baby</span>
+          </h1>
+
+          <p class="text-sm text-[#6E655F] max-w-[240px] mx-auto leading-relaxed mb-9">
+            A small note for our evening later.
+          </p>
+
+          <!-- Wax seal button -->
+          <div class="flex flex-col items-center">
+            <button
+              id="openBtn"
+              type="button"
+              class="wax-seal w-20 h-20 rounded-full flex items-center justify-center text-[#FFFDF9] cursor-pointer focus:outline-none"
+              aria-label="Open invitation"
+            >
+              <span class="font-serif-editorial italic text-xl tracking-wide">Open</span>
+            </button>
+            <span class="mt-3.5 text-[11px] tracking-wide text-[#9A8F86]">
+              Tap the seal to read
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: LETTER & ITINERARY -->
+    <section id="letterView" class="view-panel view-hidden">
+      <div class="stationery-card rounded-2xl p-6 sm:p-9">
+        <!-- Date & Salutation -->
+        <div class="flex items-baseline justify-between border-b border-[#EFE7DC] pb-4 mb-6">
+          <span class="font-serif-editorial italic text-2xl sm:text-[28px] text-[#2A2421]">
+            Hi Baby,
+          </span>
+          <span class="text-xs uppercase tracking-[0.16em] text-[#8C7F75]">
+            Nov 23 • 5:00 PM
+          </span>
+        </div>
+
+        <!-- Personal Note -->
+        <div class="space-y-3.5 text-[14.5px] sm:text-[15px] text-[#3D3531] leading-relaxed mb-7">
+          <p>
+            I wanted to properly ask you out for later. No need to stress about planning anything—just show up and let me take care of our evening.
+          </p>
+          <p>
+            Here’s what I have in mind for us at MOA:
+          </p>
+        </div>
+
+        <!-- Clean Editorial Itinerary -->
+        <div class="bg-[#FAF6F0] border border-[#EAE0D3] rounded-xl p-4 sm:p-5 mb-7 space-y-4">
+          <div class="flex items-start gap-3.5">
+            <span class="text-xs font-semibold uppercase tracking-wider text-[#9B3632] w-24 shrink-0 pt-0.5">
+              5:00 PM
+            </span>
+            <div class="text-sm">
+              <p class="font-semibold text-[#2A2421]">Dinner at Marugame Udon</p>
+              <p class="text-[#6E655F] text-xs mt-0.5">SM Mall of Asia — warm bowls of udon &amp; tempura</p>
+            </div>
+          </div>
+
+          <div class="border-t border-[#EAE0D3]"></div>
+
+          <div class="flex items-start gap-3.5">
+            <span class="text-xs font-semibold uppercase tracking-wider text-[#9B3632] w-24 shrink-0 pt-0.5">
+              After
+            </span>
+            <div class="text-sm">
+              <p class="font-semibold text-[#2A2421]">Evening stroll at MOA Sky</p>
+              <p class="text-[#6E655F] text-xs mt-0.5">Slow walk outdoors after dinner</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Playful Question Area -->
+        <div id="questionBox" class="border-t border-[#EFE7DC] pt-6 text-center relative min-h-[156px] flex flex-col justify-between">
+          <div>
+            <h2 class="font-serif-editorial text-2xl sm:text-[27px] font-medium text-[#2A2421]">
+              Are you free for a date tonight?
+            </h2>
+            <p id="hintText" class="text-xs text-[#8C7F75] mt-1 min-h-[16px]">
+              Let me know below
+            </p>
+          </div>
+
+          <div class="mt-5 flex items-center justify-center gap-3 relative">
+            <button
+              id="yesBtn"
+              type="button"
+              class="px-6 py-3 rounded-xl text-[#FFFDF9] text-sm font-medium tracking-wide shadow-sm cursor-pointer focus:outline-none"
+            >
+              Yes, I’ll be there
+            </button>
+
+            <button
+              id="noBtn"
+              type="button"
+              class="px-5 py-3 rounded-xl bg-transparent border border-[#DCD2C4] text-[#6E655F] text-sm font-medium cursor-pointer focus:outline-none"
+            >
+              No
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 3: CONFIRMED KEEPSAKE CARD -->
+    <section id="confirmedView" class="view-panel view-hidden">
+      <div class="stationery-card rounded-2xl p-7 sm:p-10 text-center">
+        <div class="border border-[#EFE7DC] rounded-xl p-6 sm:p-8">
+          <p class="text-[11px] uppercase tracking-[0.22em] text-[#9B3632] font-semibold mb-2">
+            Confirmed
+          </p>
+
+          <h2 class="font-serif-editorial text-3xl sm:text-4xl font-medium text-[#2A2421] mb-2">
+            See you at 5:00 PM, <span class="italic">Baby</span>
+          </h2>
+
+          <p class="text-xs sm:text-sm text-[#6E655F] mb-6">
+            November 23 • SM Mall of Asia
+          </p>
+
+          <div class="bg-[#FAF6F0] border border-[#EAE0D3] rounded-xl p-4 text-left space-y-2.5 text-xs sm:text-sm mb-6">
+            <div class="flex justify-between">
+              <span class="text-[#8C7F75]">Dinner</span>
+              <span class="font-medium text-[#2A2421]">Marugame Udon</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-[#8C7F75]">After</span>
+              <span class="font-medium text-[#2A2421]">MOA Sky Stroll</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-[#8C7F75]">Guest</span>
+              <span class="font-medium text-[#2A2421]">Baby</span>
+            </div>
+          </div>
+
+          <p class="font-handwriting text-2xl text-[#4A403A] mb-1">
+            Can’t wait to see you later.
+          </p>
+          <p class="text-[11px] text-[#9A8F86]">
+            Send me a screenshot when you’re ready
+          </p>
+        </div>
+
+        <button
+          id="resetBtn"
+          type="button"
+          class="mt-5 text-xs text-[#8C7F75] hover:text-[#2A2421] underline underline-offset-4 cursor-pointer"
+        >
+          Read note again
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Soft electric-piano loop (Fmaj7 -> Em7 -> Dm7 -> Cmaj7) for iOS Safari & desktop
+    const SoftPianoLoop = (function () {
+      let ctx = null;
+      let master = null;
+      let active = false;
+      let timer = null;
+      let step = 0;
+
+      const bars = [
+        { chord: [174.61, 220.00, 261.63, 329.63], note: [659.25, 587.33, 523.25, 659.25] },
+        { chord: [164.81, 196.00, 246.94, 293.66], note: [587.33, 493.88, 392.00, 493.88] },
+        { chord: [146.83, 174.61, 220.00, 261.63], note: [523.25, 440.00, 349.23, 440.00] },
+        { chord: [130.81, 196.00, 246.94, 329.63], note: [493.88, 523.25, 659.25, 783.99] }
+      ];
+
+      function ensureAudio() {
+        if (!ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          ctx = new AudioCtx();
+          master = ctx.createGain();
+          master.gain.setValueAtTime(0.0001, ctx.currentTime);
+          master.connect(ctx.destination);
+        }
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+      }
+
+      function triggerChord(freqs, lengthSec) {
+        if (!ctx || !active) return;
+        const now = ctx.currentTime;
+
+        freqs.forEach((f, i) => {
+          const osc = ctx.createOscillator();
+          const filter = ctx.createBiquadFilter();
+          const gain = ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, now);
+
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(780, now);
+          filter.frequency.exponentialRampToValueAtTime(360, now + lengthSec);
+
+          const peak = 0.038 / (1 + i * 0.14);
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.linearRampToValueAtTime(peak, now + 0.5);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + lengthSec + 0.35);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(master);
+
+          osc.start(now);
+          osc.stop(now + lengthSec + 0.45);
+        });
+      }
+
+      function triggerNote(freq) {
+        if (!ctx || !active) return;
+        const now = ctx.currentTime;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.linearRampToValueAtTime(0.028, now + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
+
+        osc.connect(gain);
+        gain.connect(master);
+
+        osc.start(now);
+        osc.stop(now + 1.6);
+      }
+
+      function tick() {
+        if (!active) return;
+        const bar = bars[Math.floor(step / 4) % bars.length];
+        const beat = step % 4;
+
+        if (beat === 0) {
+          triggerChord(bar.chord, 3.4);
+        }
+        triggerNote(bar.note[beat]);
+        step++;
+      }
+
+      function start() {
+        ensureAudio();
+        if (active) return;
+        active = true;
+
+        const now = ctx.currentTime;
+        master.gain.cancelScheduledValues(now);
+        master.gain.setValueAtTime(Math.max(0.0001, master.gain.value), now);
+        master.gain.linearRampToValueAtTime(0.8, now + 0.9);
+
+        tick();
+        timer = setInterval(tick, 900);
+        syncUI(true);
+      }
+
+      function stop() {
+        if (!active) return;
+        active = false;
+        clearInterval(timer);
+        timer = null;
+
+        if (ctx && master) {
+          const now = ctx.currentTime;
+          master.gain.cancelScheduledValues(now);
+          master.gain.setValueAtTime(Math.max(0.0001, master.gain.value), now);
+          master.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+        }
+        syncUI(false);
+      }
+
+      function toggle() {
+        active ? stop() : start();
+      }
+
+      function syncUI(on) {
+        const btn = document.getElementById('soundToggle');
+        const label = document.getElementById('soundLabel');
+        if (!btn || !label) return;
+        btn.classList.toggle('sound-active', on);
+        btn.classList.toggle('sound-muted', !on);
+        label.textContent = on ? 'Sound on' : 'Sound off';
+      }
+
+      return { start, toggle };
+    })();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const coverView = document.getElementById('coverView');
+      const letterView = document.getElementById('letterView');
+      const confirmedView = document.getElementById('confirmedView');
+
+      const openBtn = document.getElementById('openBtn');
+      const yesBtn = document.getElementById('yesBtn');
+      const noBtn = document.getElementById('noBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const soundToggle = document.getElementById('soundToggle');
+      const questionBox = document.getElementById('questionBox');
+      const hintText = document.getElementById('hintText');
+
+      const playfulHints = [
+        'Are you sure?',
+        'Try again',
+        'Nice try',
+        'Wrong button',
+        'You know you want udon',
+        'Just tap Yes'
+      ];
+      let dodgeTries = 0;
+
+      function showView(hideEl, showEl) {
+        hideEl.classList.remove('view-active');
+        hideEl.classList.add('view-hidden');
+        setTimeout(() => {
+          showEl.classList.remove('view-hidden');
+          showEl.classList.add('view-active');
+        }, 220);
+      }
+
+      soundToggle.addEventListener('click', () => SoftPianoLoop.toggle());
+
+      openBtn.addEventListener('click', () => {
+        SoftPianoLoop.start();
+        showView(coverView, letterView);
+      });
+
+      function moveNoButton(e) {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        hintText.textContent = playfulHints[dodgeTries % playfulHints.length];
+        hintText.style.color = '#9B3632';
+        dodgeTries++;
+
+        const box = questionBox.getBoundingClientRect();
+        const btn = noBtn.getBoundingClientRect();
+
+        const rangeX = Math.max(36, (box.width - btn.width) * 0.38);
+        const rangeY = Math.max(18, (box.height - btn.height) * 0.28);
+
+        const offsetX = (Math.random() * 2 - 1) * rangeX;
+        const offsetY = (Math.random() * 2 - 1) * rangeY;
+
+        noBtn.style.transform = `translate(${offsetX.toFixed(0)}px, ${offsetY.toFixed(0)}px)`;
+      }
+
+      noBtn.addEventListener('touchstart', moveNoButton, { passive: false });
+      noBtn.addEventListener('pointerdown', moveNoButton);
+      noBtn.addEventListener('mouseover', moveNoButton);
+      noBtn.addEventListener('click', moveNoButton);
+
+      yesBtn.addEventListener('click', () => {
+        releaseSubtleHearts(14);
+        showView(letterView, confirmedView);
+      });
+
+      resetBtn.addEventListener('click', () => {
+        dodgeTries = 0;
+        noBtn.style.transform = 'translate(0px, 0px)';
+        hintText.textContent = 'Let me know below';
+        hintText.style.color = '#8C7F75';
+        showView(confirmedView, coverView);
+      });
+
+      function releaseSubtleHearts(total) {
+        for (let i = 0; i < total; i++) {
+          setTimeout(() => {
+            const el = document.createElement('span');
+            el.className = 'petal-particle font-serif-editorial';
+            el.textContent = '♥';
+            el.style.left = `${Math.random() * 88 + 6}vw`;
+            el.style.fontSize = `${Math.random() * 10 + 13}px`;
+            el.style.animationDuration = `${Math.random() * 1.6 + 2.4}s`;
+            document.body.appendChild(el);
+            el.addEventListener('animationend', () => el.remove());
+          }, i * 85);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
